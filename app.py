@@ -40,7 +40,7 @@ def main():
     park = (lambda x: 1 if x == 'Yes' else 0)(st.selectbox('Does the customer need parking?', ['Yes', 'No']))
     spcl= st.selectbox('How many special requests have been made?', [0,1,2,3,4])
     lt_t, price_t= transformer.transform([[lt, price]])[0]
-    inp_list=[lt_t, spcl, price_t, adult, wkndn, park, weekn, mkt, arr_m, arr_w, totan, dep_w
+    inp_list=[lt_t, spcl, price_t, adult, wkndn, park, weekn, mkt, arr_m, arr_w, totan, dep_w]
 
     if st.button('Predict'):
     response= prediction(inp_list)
