@@ -14,10 +14,10 @@ except FileNotFoundError as e:
     st.stop()
 
 # --- 2. App Title and Description ---
-st.set_page_config(page_title="Hotel Cancellation Predictor", page_icon="🏨")
+st.set_page_config(page_title="Hotel Booking Cancellation Predictor Application", page_icon="🧳")
 st.title('🏨 Hotel Booking Cancellation Predictor')
 st.markdown("""
-This application predicts whether a hotel booking will be canceled based on the details provided. The prediction is made using a pre-trained machine learning model.
+This tool is designed for hotel owners, managers and revenue teams. It predicts whether a hotel booking will be canceled based on the details provided. By predicting the likelihood of a booking being canceled, it helps you manage inventory, optimize pricing strategies, and reduce revenue loss from last-minute cancellations. The prediction is made using a pre-trained machine learning model.
 """)
 
 # --- 3. User Input Sidebar ---
@@ -125,3 +125,4 @@ if st.sidebar.button('Predict Cancellation'):
 
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
+
