@@ -1,128 +1,104 @@
-import streamlit as st
-import pandas as pd
-import joblib
-from datetime import datetime
 import numpy as np
+import pandas as pd
+import streamlit as st
+import pickle
+import joblib
 
-# --- 1. Load Saved Objects ---
-# Load the trained model and the power transformer
-try:
-    model = joblib.load('voting_classifier_model.pkl')
-    power_transformer = joblib.load('power_transformer.pkl')
-except FileNotFoundError as e:
-    st.error(f"Error loading a required file: {e}. Please ensure both voting_classifier_model.pkl and power_transformer.pkl are in the repository.")
-    st.stop()
+# Load model and transformer
+with open('final_model.joblib', 'rb') as file:
+    model = joblib.load(file)
 
+with open('transformer.pkl', 'rb') as file:
+    transformer = pickle.load(file)
+
+# Helper function to safely convert input
+def safe_float(val):
+    try:
+        return float(val)
+    except:
+        return None
+
+def safe_int(val):
+    try:
+        return int(val)
+    except:
+        return None
+
+# Prediction logic
+def prediction(input_list):
+    input_list = np.array(input_list, dtype=object)
+    pred = model.predict_proba([input_list])[:, 1][0]
+
+    if pred > 0.5:
+        return f'This booking is more likely to get canceled, chances {round(pred, 2)}'
+    else:
+        return f'This booking is less likely to get canceled, chances {round(pred, 2)}'
+
+# Streamlit UI
 # --- 2. App Title and Description ---
-st.set_page_config(page_title="Hotel Booking Cancellation Predictor Application", page_icon="🧳")
-st.title('🏨 Hotel Booking Cancellation Predictor')
-st.markdown("""
-This tool is designed for hotel owners, managers and revenue teams. It predicts whether a hotel booking will be canceled based on the details provided. By predicting the likelihood of a booking being canceled, it helps you manage inventory, optimize pricing strategies, and reduce revenue loss from last-minute cancellations. The prediction is made using a pre-trained machine learning model.
-""")
+
+
+
+def main():
+    st.set_page_config(page_title="Hotel Booking Cancellation Predictor Application", page_icon="🧳")
+    st.title('🧳 Hotel Booking Cancellation Predictor')
+    st.markdown("""
+            This tool is designed for hotel owners, managers and revenue teams. It predicts whether a hotel booking will be canceled based on the details provided. By predicting the likelihood of a booking being canceled, it helps you manage inventory, optimize pricing strategies, and reduce revenue loss from last-minute cancellations. The prediction is made using a pre-trained machine learning model.
+                """)
 
 # --- 3. User Input Sidebar ---
 st.sidebar.header('Enter Booking Details')
 
-def user_input_features():
-    # Create input fields for the user to enter data
-    lead_time = st.sidebar.slider('Lead Time (days)', 0, 450, 50, help="Number of days between booking and arrival.")
-    market_segment_type = st.sidebar.selectbox('Market Segment Type', ('Online', 'Offline', 'Corporate', 'Complementary', 'Aviation'), help="The channel through which the booking was made.")
-    no_of_special_requests = st.sidebar.slider('Number of Special Requests', 0, 5, 1, help="Count of special requests made by the customer (e.g., twin bed).")
-    avg_price_per_room = st.sidebar.slider('Average Price Per Room ($)', 0.0, 550.0, 100.0, help="The average daily rate for the room.")
-    no_of_adults = st.sidebar.slider('Number of Adults', 1, 4, 2, help="The number of adults included in the booking.")
-    no_of_weekend_nights = st.sidebar.slider('Number of Weekend Nights', 0, 7, 1, help="Number of weekend nights (Saturday or Sunday) the guest will stay.")
-    arrival_date = st.sidebar.date_input('Arrival Date', datetime.now(), help="The scheduled arrival date for the booking.")
-    required_car_parking_space = st.sidebar.selectbox('Required Car Parking Space', (0, 1), help="Does the customer require a car parking space (1 for Yes, 0 for No).")
-    no_of_week_nights = st.sidebar.slider('Number of Week Nights', 0, 17, 2, help="Number of week nights (Monday to Friday) the guest will stay.")
+    # User input fields (clean, empty by default)
+    lt = st.sidebar.slider('Lead Time (days)', 0, 450, 50, help="Number of days between booking and arrival.")
+    price =st.sidebar.slider('Average Price Per Room ($)', 0.0, 550.0, 100.0, help="The average daily rate for the room.")
+    weekn = st.text_input('Enter number of week nights')
+    wkndn = st.text_input('Enter number of weekend nights')
 
-    # Assemble the data into a DataFrame
-    data = {
-        'lead_time': lead_time,
-        'market_segment_type': market_segment_type,
-        'no_of_special_requests': no_of_special_requests,
-        'avg_price_per_room': avg_price_per_room,
-        'no_of_adults': no_of_adults,
-        'no_of_weekend_nights': no_of_weekend_nights,
-        'arrival_date': arrival_date,
-        'required_car_parking_space': required_car_parking_space,
-        'no_of_week_nights': no_of_week_nights
-    }
-    features = pd.DataFrame(data, index=[0])
-    return features
+    mkt = 1 if st.selectbox('How the booking was made', ['Select', 'Online', 'Offline']) == 'Online' else 0
+    adult = st.selectbox('How many adults?', ['Select', 1, 2, 3, 4])
+    # arr_m = st.selectbox('Month of arrival?', ['Select'] + list(range(1, 13)))
+    arr_m = st.slider('What is the month of arrival?', min_value=1, max_value=12, step=1)
 
-input_df = user_input_features()
+    weekday_map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thus': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6}
+    arr_day = st.selectbox('Arrival weekday', ['Select'] + list(weekday_map.keys()))
+    dep_day = st.selectbox('Departure weekday', ['Select'] + list(weekday_map.keys()))
 
-# --- 4. Feature Engineering ---
-# This section must exactly replicate the preprocessing from your notebook
+    park = st.selectbox('Need parking?', ['Select', 'yes', 'no'])
+    park = 1 if park == 'yes' else 0 if park == 'no' else None
 
-# Convert arrival_date to datetime
-input_df["arrival_date"] = pd.to_datetime(input_df["arrival_date"])
+    spcl = st.selectbox('Number of special requests', ['Select', 0, 1, 2, 3, 4, 5])
 
-# One-hot encode market_segment_type
-input_df['market_segment_type_Online'] = 1 if input_df['market_segment_type'][0] == 'Online' else 0
+    # Validate inputs
+    lt_val = safe_float(lt)
+    price_val = safe_float(price)
+    weekn_val = safe_int(weekn)
+    wkndn_val = safe_int(wkndn)
 
-# Apply PowerTransformer to numerical columns
-num_cols = ["lead_time", "avg_price_per_room"]
-input_df[num_cols] = power_transformer.transform(input_df[num_cols])
+    if st.button('Predict'):
+        if None in [lt_val, price_val, weekn_val, wkndn_val] or \
+           'Select' in [adult, arr_m, arr_day, dep_day, spcl] or park is None:
+            st.warning("⚠️ Please fill in all fields correctly before predicting.")
+            return
 
-# Create date-based features
-input_df["arrival_month"] = input_df["arrival_date"].dt.month
-input_df["arrival_weekday"] = input_df["arrival_date"].dt.weekday
+        try:
+            # Transform lead time and price
+            lt_t, price_t = transformer.transform([[lt_val, price_val]])[0]
 
-# Create Total_nights feature
-input_df["Total_nights"] = input_df["no_of_week_nights"] + input_df["no_of_weekend_nights"]
+            # Convert dropdown values
+            arr_w = weekday_map[arr_day]
+            dep_w = weekday_map[dep_day]
+            totan = weekn_val + wkndn_val
 
-# Create departure_weekday feature
-input_df["departure_weekday"] = input_df["arrival_weekday"] + input_df["Total_nights"]
+            # Prepare feature list
+            inp_list = [lt_t, spcl, price_t, adult, wkndn_val, park, weekn_val, mkt, arr_m, arr_w, totan, dep_w]
 
-def setting_weekday(num):
-    return num % 7 if num > 6 else num
+            response = prediction(inp_list)
+            st.success(response)
 
-input_df["departure_weekday"] = input_df["departure_weekday"].apply(setting_weekday)
+        except Exception as e:
+            st.error(f"❌ Prediction failed: {str(e)}")
 
-# --- 5. Final Feature Selection and Ordering ---
-# Drop columns that are no longer needed for prediction
-input_df = input_df.drop(columns=["arrival_date", "market_segment_type"])
-
-# Define the final expected order of columns based on your notebook's training data
-expected_columns = [
-    'lead_time', 'no_of_special_requests', 'avg_price_per_room', 'no_of_adults',
-    'no_of_weekend_nights', 'required_car_parking_space', 'no_of_week_nights',
-    'market_segment_type_Online', 'arrival_month', 'arrival_weekday',
-    'Total_nights', 'departure_weekday'
-]
-
-# Add any missing columns and fill with 0, then reorder
-for col in expected_columns:
-    if col not in input_df.columns:
-        input_df[col] = 0
-final_df = input_df[expected_columns]
-
-st.subheader('Review Your Input (After Transformation)')
-st.write(final_df)
-
-
-# --- 6. Prediction and Output ---
-if st.sidebar.button('Predict Cancellation'):
-    try:
-        # Make prediction
-        prediction = model.predict(final_df)
-        prediction_proba = model.predict_proba(final_df)
-
-        # CORRECTLY Decode the prediction based on {"Canceled":1 , "Not Canceled":0}
-        booking_status = "Canceled" if prediction[0] == 1 else "Not Canceled"
-
-        st.subheader('Prediction Result')
-        if booking_status == "Canceled":
-            st.warning(f"The booking is predicted to be **{booking_status}**.")
-        else:
-            st.success(f"The booking is predicted to be **{booking_status}**.")
-
-        # CORRECTLY Display probabilities
-        st.subheader('Prediction Probability')
-        st.write(f"Probability of being 'Not Canceled' (Class 0): **{prediction_proba[0][0]:.2f}**")
-        st.write(f"Probability of being 'Canceled' (Class 1): **{prediction_proba[0][1]:.2f}**")
-
-    except Exception as e:
-        st.error(f"An error occurred during prediction: {e}")
-
+# Run the app
+if __name__ == '__main__':
+    main()
