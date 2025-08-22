@@ -4,7 +4,7 @@ import streamlit as st
 import pickle
 import joblib
 
-# Load model and transformer
+# Load model and transformer (This runs only once when the app starts)
 with open('final_model.joblib', 'rb') as file:
     model = joblib.load(file)
 
@@ -34,30 +34,25 @@ def prediction(input_list):
     else:
         return f'This booking is less likely to get canceled, chances {round(pred, 2)}'
 
-# Streamlit UI
-# --- 2. App Title and Description ---
-
-
-
+# Main function to run the Streamlit app
 def main():
-    st.set_page_config(page_title="Hotel Booking Cancellation Predictor Application", page_icon="🧳")
+    st.set_page_config(page_title="Hotel Booking Cancellation Predictor Application", page_icon="�")
     st.title('🧳 Hotel Booking Cancellation Predictor')
     st.markdown("""
-            This tool is designed for hotel owners, managers and revenue teams. It predicts whether a hotel booking will be canceled based on the details provided. By predicting the likelihood of a booking being canceled, it helps you manage inventory, optimize pricing strategies, and reduce revenue loss from last-minute cancellations. The prediction is made using a pre-trained machine learning model.
-                """)
+        This tool is designed for hotel owners, managers and revenue teams. It predicts whether a hotel booking will be canceled based on the details provided. By predicting the likelihood of a booking being canceled, it helps you manage inventory, optimize pricing strategies, and reduce revenue loss from last-minute cancellations. The prediction is made using a pre-trained machine learning model.
+    """)
 
-# --- 3. User Input Sidebar ---
-st.sidebar.header('Enter Booking Details')
+    # --- 3. User Input Sidebar ---
+    st.sidebar.header('Enter Booking Details')
 
-    # User input fields (clean, empty by default)
+    # User input fields
     lt = st.sidebar.slider('Lead Time (days)', 0, 450, 50, help="Number of days between booking and arrival.")
-    price =st.sidebar.slider('Average Price Per Room ($)', 0.0, 550.0, 100.0, help="The average daily rate for the room.")
+    price = st.sidebar.slider('Average Price Per Room ($)', 0.0, 550.0, 100.0, help="The average daily rate for the room.")
     weekn = st.text_input('Enter number of week nights')
     wkndn = st.text_input('Enter number of weekend nights')
 
     mkt = 1 if st.selectbox('How the booking was made', ['Select', 'Online', 'Offline']) == 'Online' else 0
     adult = st.selectbox('How many adults?', ['Select', 1, 2, 3, 4])
-    # arr_m = st.selectbox('Month of arrival?', ['Select'] + list(range(1, 13)))
     arr_m = st.slider('What is the month of arrival?', min_value=1, max_value=12, step=1)
 
     weekday_map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thus': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6}
@@ -77,7 +72,7 @@ st.sidebar.header('Enter Booking Details')
 
     if st.button('Predict'):
         if None in [lt_val, price_val, weekn_val, wkndn_val] or \
-           'Select' in [adult, arr_m, arr_day, dep_day, spcl] or park is None:
+           'Select' in [adult, arr_day, dep_day, spcl] or park is None:
             st.warning("⚠️ Please fill in all fields correctly before predicting.")
             return
 
@@ -102,3 +97,4 @@ st.sidebar.header('Enter Booking Details')
 # Run the app
 if __name__ == '__main__':
     main()
+�
