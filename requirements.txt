@@ -1,6 +1,8 @@
 xgboost
-scikit-learn==1.5.1
+scikit-learn
 streamlit
 pickle
 sklearn
 joblib
+pandas
+
