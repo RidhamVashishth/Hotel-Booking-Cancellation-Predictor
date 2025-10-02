@@ -1,10 +1,17 @@
-# **Hotel Booking Cancellation Prediction**
+# **🏨Hotel Booking Cancellation Prediction App**
 
 ## **1\. Project Overview**
 
-This project presents a data-driven solution to predict hotel booking cancellations for the INN Hotels Group. By leveraging machine learning, the system identifies bookings with a high likelihood of being canceled, enabling the hotel to implement proactive strategies to mitigate revenue loss and improve operational efficiency. The final model is deployed as an interactive web application using Streamlit.
+This project presents a data-driven solution to predict hotel booking cancellations for the INN Hotels Group. It's designed to help hotel managers, revenue analysts, and travel businesses make smarter decisions based on customer and booking attributes. By leveraging machine learning, the system identifies bookings with a high likelihood of being canceled, enabling the hotel to implement proactive strategies to mitigate revenue loss and improve operational efficiency. The final model is deployed as an interactive web application using Streamlit.
 
 👉 [Click here to access the live app](https://innhotel-booking-cancellation-predictor.streamlit.app/)
+
+📌 Features
+Predicts the likelihood of booking cancellation using historical data.
+Clean, intuitive Streamlit user interface.
+Automatically handles data transformation and model predictions.
+Input validations for better user experience and reliability.
+
 
 ## **2\. Business Problem**
 
