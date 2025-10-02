@@ -1,6 +1,7 @@
 streamlit
 pandas
-scikit-learn==1.3.0
-xgboost==2.0.3
+scikit-learn
+xgboost
 joblib
 pickle
+
