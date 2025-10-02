@@ -9,7 +9,7 @@ import numpy as np
 @st.cache_resource
 def load_objects():
     """Loads the trained model, scaler, and power transformer."""
-    model = joblib.load('lgbm_cancellation_model.joblib')
+    model = joblib.load('lgbm_cancellation_predictor_model.joblib')
     scaler = joblib.load('scaler.joblib')
     transformer = joblib.load('power_transformer.joblib')
     return model, scaler, transformer
@@ -151,3 +151,4 @@ if st.button("Predict Cancellation", type="primary", use_container_width=True):
         
         **Business Recommendation:** For high-risk bookings, consider a proactive approach such as a confirmation email a week before arrival or offering a small, non-refundable discount to lock in the reservation.
         """)
+
